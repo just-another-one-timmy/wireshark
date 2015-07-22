@@ -301,9 +301,9 @@ typedef struct ajp13_frame_data {
  * XXX - is there a tvbuff routine to handle this?
  */
 static const gchar *
-ajp13_get_nstring(tvbuff_t *tvb, gint offset, guint16* ret_len)
+ajp13_get_nstring(tvbuff_t *tvb, gint offset, guint32* ret_len)
 {
-  guint16 len;
+  guint32 len;
 
   len = tvb_get_ntohs(tvb, offset);
 
@@ -326,7 +326,7 @@ display_rsp(tvbuff_t *tvb, packet_info *pinfo, proto_tree *ajp13_tree, ajp13_con
 {
   int pos = 0;
   guint8 mcode = 0;
-  int i;
+  long i;
 
   /* MAGIC
    */
@@ -359,9 +359,9 @@ display_rsp(tvbuff_t *tvb, packet_info *pinfo, proto_tree *ajp13_tree, ajp13_con
   case MTYPE_SEND_HEADERS:
   {
     const gchar *rsmsg;
-    guint16 rsmsg_len;
-    guint16 nhdr;
-    guint16 rcode_num;
+    guint32 rsmsg_len;
+    guint32 nhdr;
+    guint32 rcode_num;
 
     /* HTTP RESPONSE STATUS CODE
      */
@@ -393,7 +393,7 @@ display_rsp(tvbuff_t *tvb, packet_info *pinfo, proto_tree *ajp13_tree, ajp13_con
       guint8 hcd;
       guint8 hid;
       const gchar *hval;
-      guint16 hval_len, hname_len;
+      guint32 hval_len, hname_len;
       const gchar* hname = NULL;
       int hpos = pos;
       /* int cl = 0; TODO: Content-Length header (encoded by 0x08) is special */
@@ -439,7 +439,7 @@ display_rsp(tvbuff_t *tvb, packet_info *pinfo, proto_tree *ajp13_tree, ajp13_con
 
   case MTYPE_GET_BODY_CHUNK:
   {
-    guint16 rlen;
+    guint32 rlen;
     rlen = tvb_get_ntohs(tvb, pos);
     cd->content_length = rlen;
     if (ajp13_tree)
@@ -474,8 +474,8 @@ display_req_body(tvbuff_t *tvb, proto_tree *ajp13_tree, ajp13_conv_data* cd)
   /*
    * In a resued connection this is never reset.
    */
-  guint16 content_length;
-  guint16 packet_length;
+  guint32 content_length;
+  guint32 packet_length;
 
   int pos = 0;
 
@@ -532,15 +532,15 @@ display_req_forward(tvbuff_t *tvb, packet_info *pinfo,
   guint8 meth;
   guint8 cod;
   const gchar *ver;
-  guint16 ver_len;
+  guint32 ver_len;
   const gchar *uri;
-  guint16 uri_len;
+  guint32 uri_len;
   const gchar *raddr;
-  guint16 raddr_len;
+  guint32 raddr_len;
   const gchar *rhost;
-  guint16 rhost_len;
+  guint32 rhost_len;
   const gchar *srv;
-  guint16 srv_len;
+  guint32 srv_len;
   guint nhdr;
   guint i;
 
@@ -641,7 +641,7 @@ display_req_forward(tvbuff_t *tvb, packet_info *pinfo,
     int hpos = pos;
     int cl = 0;
     const gchar *hval;
-    guint16 hval_len, hname_len;
+    guint32 hval_len, hname_len;
 
     /* HEADER CODE/NAME
      */
@@ -689,7 +689,7 @@ display_req_forward(tvbuff_t *tvb, packet_info *pinfo,
     guint8 aid;
     const gchar* aname = NULL;
     const gchar* aval;
-    guint16 aval_len, aname_len;
+    guint32 aval_len, aname_len;
 
     int apos = pos;
 
@@ -745,8 +745,8 @@ display_req_forward(tvbuff_t *tvb, packet_info *pinfo,
 static int
 dissect_ajp13_tcp_pdu(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data _U_)
 {
-  guint16 mag;
-  /* guint16 len; */
+  guint32 mag;
+  /* guint32 len; */
   conversation_t *conv = NULL;
   ajp13_conv_data *cd = NULL;
   proto_tree *ajp13_tree = NULL;
@@ -835,8 +835,8 @@ dissect_ajp13_tcp_pdu(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void*
 static guint
 get_ajp13_pdu_len(packet_info *pinfo _U_, tvbuff_t *tvb, int offset, void *data _U_)
 {
-  /*guint16 magic;*/
-  guint16 plen;
+  /*guint32 magic;*/
+  guint32 plen;
   /*magic = tvb_get_ntohs(tvb, offset); */
   plen = tvb_get_ntohs(tvb, offset+2);
   plen += 4;
@@ -872,7 +872,7 @@ proto_register_ajp13(void)
         HFILL }
     },
     { &hf_ajp13_len,
-      { "Length",  "ajp13.len", FT_UINT16, BASE_DEC, NULL, 0x0, "Data Length",
+      { "Length",  "ajp13.len", FT_UINT32, BASE_DEC, NULL, 0x0, "Data Length",
         HFILL }
     },
     { &hf_ajp13_code,
@@ -904,7 +904,7 @@ proto_register_ajp13(void)
         HFILL }
     },
     { &hf_ajp13_port,
-      { "PORT",  "ajp13.port", FT_UINT16, BASE_DEC, NULL, 0x0, NULL,
+      { "PORT",  "ajp13.port", FT_UINT32, BASE_DEC, NULL, 0x0, NULL,
         HFILL }
     },
     { &hf_ajp13_sslp,
@@ -912,7 +912,7 @@ proto_register_ajp13(void)
         HFILL }
     },
     { &hf_ajp13_nhdr,
-      { "NHDR",  "ajp13.nhdr", FT_UINT16, BASE_DEC, NULL, 0x0, "Num Headers",
+      { "NHDR",  "ajp13.nhdr", FT_UINT32, BASE_DEC, NULL, 0x0, "Num Headers",
         HFILL }
     },
 /* response headers */
@@ -1063,7 +1063,7 @@ proto_register_ajp13(void)
         HFILL }
     },
     { &hf_ajp13_ssl_key_size,
-      { "SSL-Key-Size",  "ajp13.ssl_key_size", FT_UINT16, BASE_DEC, NULL, 0x0, "SSL-Key-Size Attribute",
+      { "SSL-Key-Size",  "ajp13.ssl_key_size", FT_UINT32, BASE_DEC, NULL, 0x0, "SSL-Key-Size Attribute",
         HFILL }
     },
     { &hf_ajp13_secret,
@@ -1076,7 +1076,7 @@ proto_register_ajp13(void)
     },
 
     { &hf_ajp13_rlen,
-      { "RLEN",  "ajp13.rlen", FT_UINT16, BASE_DEC, NULL, 0x0, "Requested Length",
+      { "RLEN",  "ajp13.rlen", FT_UINT32, BASE_DEC, NULL, 0x0, "Requested Length",
         HFILL }
     },
     { &hf_ajp13_reusep,
@@ -1084,7 +1084,7 @@ proto_register_ajp13(void)
         HFILL }
     },
     { &hf_ajp13_rstatus,
-      { "RSTATUS",  "ajp13.rstatus", FT_UINT16, BASE_DEC, NULL, 0x0, "HTTP Status Code",
+      { "RSTATUS",  "ajp13.rstatus", FT_UINT32, BASE_DEC, NULL, 0x0, "HTTP Status Code",
         HFILL }
     },
     { &hf_ajp13_rsmsg,
