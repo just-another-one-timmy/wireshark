@@ -67,7 +67,7 @@ extern "C" {
 WS_DLL_PUBLIC int hf_text_only;
 
 /** the maximum length of a protocol field string representation */
-#define ITEM_LABEL_LENGTH	20040
+#define ITEM_LABEL_LENGTH	65535
 
 struct _value_string;
 struct expert_field;
